@@ -8,10 +8,11 @@ multiplex = .004
 segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
 speedofsound = const(343) # meters per second
 
-triggerpin = const(13)
+triggerpin = const(11)
 echopin = const(12)
-conversionbuttonpin = const(15)
+conversionbuttonpin = const(13)
 frontdistancebuttonpin = const(14)
+backdistancebuttonpin = const(15)
 
 class distancemeasure(object):
 
