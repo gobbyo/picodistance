@@ -22,8 +22,8 @@ import time
 # 8 =   0111 1111   0x7F
 # 9 =   0110 0111   0x67
 
-waitreps = 10
-waitonpaint = 0.001
+waitreps = 20
+waitonpaint = 0.004
 # The variable below can be any number of digits for a 7 segment display. 
 # For example, a 2 digit 7 segment display is digitpins=[1,0], four digit 7 segment display is digitpins=[3,2,1,0], etc.
 fourdigitpins = [3,2,1,0]
@@ -102,13 +102,13 @@ class segdisplays:
     def printnum(self,d,digits,latch,clock,data):
         if d < 99:
             num = "{0}".format(d)
-            d = len(digits)-1
+            d = len(digits)
             i = len(num)-1
             while i >= 0 & d >= 0:
                 if(num[i].isdigit()):
                     val = segnum[int(num[i])]
                     self.paintdigit(val,digits[d],latch,clock,data)
-                    d -= 1
+                d -= 1
                 i -= 1
 
     def printfloat(self,f,digits,latch,clock,data):
@@ -171,7 +171,7 @@ def main():
             while i >= 0:
                 for w in range(waitreps):
                     val = 0x01 << i
-                    segdisp.paintdigit(val,segdisp.twodigits[d],twolatch,twoclock,twodata)
+                    segdisp.paintdigit(val,segdisp.twodigits,twolatch,twoclock,twodata)
                 i -= 1
             d -= 1
 

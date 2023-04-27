@@ -12,8 +12,9 @@ triggerpin = const(11)
 echopin = const(12)
 conversionbuttonpin = const(15)
 frontdistancebuttonpin = const(14)
-frontbuttoncorrection = 10 #millimeters
-ultrasoundescape = 100000000
+backdistancebuttonpin = const(13)
+frontbuttoncorrection = -10 #millimeters
+backbuttoncorrection = 10 #millimeters
 
 twodigitpins = [21,16]
 fourdigitpins = [3,2,1,0]
@@ -174,22 +175,12 @@ def getdistancemeasure():
         time.sleep(.002)
         trig.low()
         
-        i = 0
         while echo.value() == 0:
-            time.sleep(.0000001)
-            i += 1
-            if i > ultrasoundescape:
-                break
-        
+            time.sleep(.00001)
         send = time.ticks_us()
 
-        i = 0
         while echo.value() == 1:
-            time.sleep(.0000001)
-            i += 1
-            if i > ultrasoundescape:
-                break
-        
+            time.sleep(.00001)
         receive = time.ticks_us()
 
         timepassed = receive - send
@@ -244,6 +235,7 @@ def runtest(segdisp):
 def main():   
 
     frontdistancebutton=Pin(frontdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
+    backtdistancebutton=Pin(backdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
     conversionbutton=Pin(conversionbuttonpin,Pin.IN,Pin.PULL_DOWN)
     display = segdisplays()
     runtest(display)
@@ -254,7 +246,9 @@ def main():
 
         while True:
             if frontdistancebutton.value():
-                d = getdistancemeasure() - frontbuttoncorrection
+                d = getdistancemeasure() + frontbuttoncorrection
+            if backtdistancebutton.value():
+                d = getdistancemeasure() + backbuttoncorrection
 
             distance.set(d)
 
