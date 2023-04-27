@@ -1,8 +1,8 @@
 from machine import Pin
 import time
 
-waitreps = const(20)
-waitonpaint = 0.004
+waitreps = const(10)
+waitonpaint = 0.002
 millimeters = const(0.001)
 ultrasoundlimit = const(4572) #set to 15 feet (in millimeters) based on the spec sheet.
 segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
@@ -12,6 +12,8 @@ triggerpin = const(11)
 echopin = const(12)
 conversionbuttonpin = const(15)
 frontdistancebuttonpin = const(14)
+frontbuttoncorrection = 10 #millimeters
+ultrasoundescape = 100000000
 
 twodigitpins = [21,16]
 fourdigitpins = [3,2,1,0]
@@ -159,47 +161,92 @@ class segdisplays:
 def getdistancemeasure():
     print("getdistancemeasure")
 
-    trig = Pin(triggerpin,Pin.OUT)
-    echo = Pin(echopin,Pin.IN,Pin.PULL_DOWN)
+    try:
+        trig = Pin(triggerpin,Pin.OUT)
+        echo = Pin(echopin,Pin.IN,Pin.PULL_DOWN)
 
-    receive = 0
-    send = 0
+        receive = 0
+        send = 0
 
-    trig.low()
-    time.sleep(.002)
-    trig.high()
-    time.sleep(.002)
-    trig.low()
-    
-    while echo.value() == 0:
-        pass
-    send = time.ticks_us()
+        trig.low()
+        time.sleep(.002)
+        trig.high()
+        time.sleep(.002)
+        trig.low()
+        
+        i = 0
+        while echo.value() == 0:
+            time.sleep(.0000001)
+            i += 1
+            if i > ultrasoundescape:
+                break
+        
+        send = time.ticks_us()
 
-    while echo.value() == 1:
-        pass
-    receive = time.ticks_us()
+        i = 0
+        while echo.value() == 1:
+            time.sleep(.0000001)
+            i += 1
+            if i > ultrasoundescape:
+                break
+        
+        receive = time.ticks_us()
 
-    timepassed = receive - send
+        timepassed = receive - send
 
-    distanceinmillimeters = 0
-
-    if timepassed > 0:
-        distanceinmillimeters = round((timepassed * speedofsound * millimeters) / 2)
-    
-    if (distanceinmillimeters > ultrasoundlimit):
         distanceinmillimeters = 0
-    
-    print("distanceinmillimeters = {0}".format(distanceinmillimeters))
-    
-    trig.low()
 
-    return distanceinmillimeters
+        if timepassed > 0:
+            distanceinmillimeters = round((timepassed * speedofsound * millimeters) / 2)
+        
+        if (distanceinmillimeters > ultrasoundlimit):
+            distanceinmillimeters = 0
+        
+        print("distanceinmillimeters = {0}".format(distanceinmillimeters))
+        
+        trig.low()
+    finally:
+        return distanceinmillimeters
+
+def runtest(segdisp):
+    for d in segdisp.twodigits:
+            for i in range(8):
+                for w in range(waitreps):
+                    val = 0x01 << i
+                    segdisp.paintdigit(val,d,segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
+        
+    for d in segdisp.fourdigits:
+        for i in range(8):
+            for w in range(waitreps):
+                val = 0x01 << i
+                segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
+    
+    d = 3
+    while d >= 0:
+        i = 7
+        while i >= 0:
+            for w in range(waitreps):
+                val = 0x01 << i
+                segdisp.paintdigit(val,segdisp.fourdigits[d],segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
+            i -= 1
+        d -= 1
+
+    d = 1
+    while d >= 0:
+        i = 7
+        while i >= 0:
+            for w in range(waitreps):
+                val = 0x01 << i
+                segdisp.paintdigit(val,segdisp.twodigits[d],segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
+            i -= 1
+        d -= 1
 
 def main():   
 
     frontdistancebutton=Pin(frontdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
     conversionbutton=Pin(conversionbuttonpin,Pin.IN,Pin.PULL_DOWN)
     display = segdisplays()
+    runtest(display)
 
     try:
         d = 0
@@ -207,18 +254,15 @@ def main():
 
         while True:
             if frontdistancebutton.value():
-                print("frontdistancebutton pushed")
-                d = getdistancemeasure()
+                d = getdistancemeasure() - frontbuttoncorrection
 
             distance.set(d)
 
-            if conversionbutton.value():   
-                print("meters")           
+            if conversionbutton.value():         
                 for w in range(waitreps):
                     display.printnumber(distance.meters)
                     display.printfloat(distance.centimeters)
             else:
-               print("feet") 
                for w in range(waitreps):
                     display.printnumber(distance.feet)
                     display.printfloat(distance.inches)
