@@ -13,6 +13,8 @@ echopin = const(12)
 conversionbuttonpin = const(15)
 frontdistancebuttonpin = const(14)
 backdistancebuttonpin = const(13)
+frontmeasureLEDpin = const(18)
+backmeasureLEDpin = const(19)
 frontbuttoncorrection = -10 #millimeters
 backbuttoncorrection = 10 #millimeters
 
@@ -237,6 +239,9 @@ def main():
     frontdistancebutton=Pin(frontdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
     backtdistancebutton=Pin(backdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
     conversionbutton=Pin(conversionbuttonpin,Pin.IN,Pin.PULL_DOWN)
+    frontmeasureLED=Pin(frontmeasureLEDpin,Pin.OUT)
+    backmeasureLED=Pin(backmeasureLEDpin,Pin.OUT)
+    
     display = segdisplays()
     runtest(display)
 
@@ -247,8 +252,12 @@ def main():
         while True:
             if frontdistancebutton.value():
                 d = getdistancemeasure() + frontbuttoncorrection
+                frontmeasureLED.high()
+                backmeasureLED.low()
             if backtdistancebutton.value():
                 d = getdistancemeasure() + backbuttoncorrection
+                frontmeasureLED.low()
+                backmeasureLED.high()
 
             distance.set(d)
 
