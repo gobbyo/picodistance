@@ -203,20 +203,20 @@ def getdistancemeasure():
 
 def runtest(segdisp):
     for d in segdisp.twodigits:
-            for i in range(8):
+            for i in range(6):
                 for w in range(waitreps):
                     val = 0x01 << i
                     segdisp.paintdigit(val,d,segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
         
     for d in segdisp.fourdigits:
-        for i in range(8):
+        for i in range(6):
             for w in range(waitreps):
                 val = 0x01 << i
                 segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
     
     d = 3
     while d >= 0:
-        i = 7
+        i = 6
         while i >= 0:
             for w in range(waitreps):
                 val = 0x01 << i
@@ -226,7 +226,7 @@ def runtest(segdisp):
 
     d = 1
     while d >= 0:
-        i = 7
+        i = 6
         while i >= 0:
             for w in range(waitreps):
                 val = 0x01 << i
