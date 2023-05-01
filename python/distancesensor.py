@@ -201,29 +201,14 @@ def getdistancemeasure():
     finally:
         return distanceinmillimeters
 
-def runtest(segdisp):
+def showbacknumber(segdisp):
     for d in segdisp.twodigits:
-            for i in range(6):
-                for w in range(waitreps):
-                    val = 0x01 << i
-                    segdisp.paintdigit(val,d,segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
-        
-    for d in segdisp.fourdigits:
         for i in range(6):
             for w in range(waitreps):
                 val = 0x01 << i
-                segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
-    
-    d = 3
-    while d >= 0:
-        i = 6
-        while i >= 0:
-            for w in range(waitreps):
-                val = 0x01 << i
-                segdisp.paintdigit(val,segdisp.fourdigits[d],segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
-            i -= 1
-        d -= 1
+                segdisp.paintdigit(val,d,segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
 
+def showforwardnumber(segdisp):
     d = 1
     while d >= 0:
         i = 6
@@ -234,8 +219,31 @@ def runtest(segdisp):
             i -= 1
         d -= 1
 
-def main():   
+def showbackfloat(segdisp):
+    for d in segdisp.fourdigits:
+        for i in range(6):
+            for w in range(waitreps):
+                val = 0x01 << i
+                segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
 
+def showforwardfloat(segdisp):
+    d = 3
+    while d >= 0:
+        i = 6
+        while i >= 0:
+            for w in range(waitreps):
+                val = 0x01 << i
+                segdisp.paintdigit(val,segdisp.fourdigits[d],segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
+            i -= 1
+        d -= 1
+
+def startup(segdisp):
+    showbacknumber(segdisp)
+    showbackfloat(segdisp)
+    showforwardfloat(segdisp)
+    showforwardnumber(segdisp)
+
+def main():   
     frontdistancebutton=Pin(frontdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
     backtdistancebutton=Pin(backdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
     conversionbutton=Pin(conversionbuttonpin,Pin.IN,Pin.PULL_DOWN)
@@ -243,25 +251,34 @@ def main():
     backmeasureLED=Pin(backmeasureLEDpin,Pin.OUT)
     
     display = segdisplays()
-    runtest(display)
+    startup(display)
 
     try:
-        d = 0
+        prev = d = 0
         distance = distancestringtools()
+        distance.set(d)
 
         while True:
             if frontdistancebutton.value():
                 d = getdistancemeasure() + frontbuttoncorrection
+                distance.set(d)
+                if(d != prev):
+                    showforwardfloat(display)
+                    showforwardnumber(display)
+                    prev = d
                 frontmeasureLED.high()
                 backmeasureLED.low()
             if backtdistancebutton.value():
                 d = getdistancemeasure() + backbuttoncorrection
+                distance.set(d)
+                if(d != prev):
+                    showbacknumber(display)
+                    showbackfloat(display)
+                    prev = d
                 frontmeasureLED.low()
                 backmeasureLED.high()
 
-            distance.set(d)
-
-            if conversionbutton.value():         
+            if conversionbutton.value():
                 for w in range(waitreps):
                     display.printnumber(distance.meters)
                     display.printfloat(distance.centimeters)
