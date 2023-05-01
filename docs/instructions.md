@@ -4,7 +4,7 @@ Capabilities needed.
 
 ## Project Overview
 
-This electronic distance measure and laser level uses a raspberry pi pico with an ultrasonic sensor to measure distances up to about 15 feet or 4 meters 57 centimeters. The external-facing components, such as the ultrasonic sensor, switches, lasers, displays, and buttons are all inset in the casing so that you can measure from the front or back of the device from a flush surface.
+This electronic distance measure and laser level uses a raspberry pi pico with an ultrasonic sensor to measure distances up to about 15 feet or 4.57 meters. The external-facing components, such as the ultrasonic sensor, switches, lasers, displays, and buttons are all inset in the casing so that you can measure from the front or back of the device from a flush surface.
 
 Some advantages of the electronic distance measure:
 - Non-contact measurement: Ultrasonic sensors can measure distance without physically touching the object. This makes them ideal for measuring distances to moving objects or to objects that are difficult to access.
