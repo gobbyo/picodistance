@@ -2,6 +2,8 @@
 
 |Item  |Model  |Quantity  |Datasheet  |
 |---------|---------|---------|---------|
+| Raspberry Pi Pico  | RP2040 | 1 | https://www.raspberrypi.com/products/raspberry-pi-pico/ |
+| Printed Circuit Board | N/A | 1 | See PCB ordering instructions |
 | LED 2-Digit 7-Segment Display 0.36"  | 3621AS | 1 | http://www.xlitx.com/datasheet/3621AS.pdf |
 | LED 4-Digit 7-Segment Display 0.36" | 3641AH | 1 | http://www.xlitx.com/datasheet/3641AH.pdf |
 | 5vDC voltage regulator | 7805 | 1 | https://www.eleccircuit.com/7805-5v-voltage-regulator-datasheet/ |
@@ -13,7 +15,5 @@
 | Mini Level Picture Hanging Spirit Bubble Level, 10x10x29mm Square Level Mark Measuring Tool | 43338-2313 |  2 | N/A |
 | Mini Rocker Switch T85 2 Pin SPST Small ON and Off Rocker Toggle KCD1 Switch | KCD1-101 | 1 | https://www.chinadaier.com/kcd1-101-10-amp-rocker-switch/ |
 |M2 tapping screws  | M2 | 16 | N/A  |
-|Surface Mounted Devices Chip Resistor, 330 Ohm 1/8W 0805 Fixed Resistors  | a19030500ux0300
- | 16 |  N/A |
-|Surface Mounted Devices Chip Resistor, 220 Ohm 1/10W Fixed Resistors
- | pta220823tt0324 | 2 | N/A |
+|Surface Mounted Devices Chip Resistor, 330 Ohm 1/8W 0805 Fixed Resistors  | a19030500ux0300 | 16 |  N/A |
+|Surface Mounted Devices Chip Resistor, 220 Ohm 1/10W Fixed Resistors | pta220823tt0324 | 2 | N/A |

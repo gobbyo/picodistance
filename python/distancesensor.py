@@ -1,6 +1,7 @@
 from machine import Pin
 import time
 
+shutdown = const(120)
 waitreps = const(10)
 waitonpaint = 0.002
 millimeters = const(0.001)
@@ -257,9 +258,11 @@ def main():
         prev = d = 0
         distance = distancestringtools()
         distance.set(d)
+        t = time.time() + shutdown
 
-        while True:
+        while t > time.time():
             if frontdistancebutton.value():
+                t += shutdown
                 d = getdistancemeasure() + frontbuttoncorrection
                 distance.set(d)
                 if(d != prev):
@@ -269,6 +272,7 @@ def main():
                 frontmeasureLED.high()
                 backmeasureLED.low()
             if backtdistancebutton.value():
+                t += shutdown
                 d = getdistancemeasure() + backbuttoncorrection
                 distance.set(d)
                 if(d != prev):
@@ -288,6 +292,8 @@ def main():
                     display.printfloat(distance.inches)
 
     finally:
+        frontmeasureLED.low()
+        backmeasureLED.low()
         conversionbutton.low()
         frontdistancebutton.low()
         display.__del__()
