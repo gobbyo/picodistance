@@ -1,7 +1,7 @@
 from machine import Pin
 import time
 
-shutdown = const(120)
+shutdown = const(600)
 waitreps = const(10)
 waitonpaint = 0.002
 millimeters = const(0.001)
