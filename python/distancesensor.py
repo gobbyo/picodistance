@@ -9,11 +9,11 @@ ultrasoundlimit = const(4572) #set to 15 feet (in millimeters) based on the spec
 segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
 speedofsound = const(343) # meters per second
 
-triggerpin = const(11)
-echopin = const(12)
+triggerpin = const(12)
+echopin = const(13)
 conversionbuttonpin = const(15)
 frontdistancebuttonpin = const(14)
-backdistancebuttonpin = const(13)
+backdistancebuttonpin = const(11)
 frontmeasureLEDpin = const(18)
 backmeasureLEDpin = const(19)
 frontbuttoncorrection = -10 #millimeters

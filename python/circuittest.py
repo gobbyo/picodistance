@@ -22,7 +22,7 @@ import time
 # 8 =   0111 1111   0x7F
 # 9 =   0110 0111   0x67
 
-waitreps = 20
+waitreps = 50
 waitonpaint = 0.004
 # The variable below can be any number of digits for a 7 segment display. 
 # For example, a 2 digit 7 segment display is digitpins=[1,0], four digit 7 segment display is digitpins=[3,2,1,0], etc.
@@ -50,12 +50,21 @@ class segdisplays:
             pin = Pin(d, Pin.OUT)
             pin.high()
             self.fourdigits.append(pin)
+        
+        self.fourlatch = Pin(fourlatchpin, Pin.OUT)
+        self.fourclock = Pin(fourclockpin, Pin.OUT)
+        self.fourdata = Pin(fourdatapin, Pin.OUT)
+            
+        self.twolatch = Pin(twolatchpin, Pin.OUT)
+        self.twoclock = Pin(twoclockpin, Pin.OUT)
+        self.twodata = Pin(twodatapin, Pin.OUT)
+    
     def __del__(self):
         for t in self.twodigits:
-            setregister(0,twolatch,twoclock,twodata)
+            self.setregister(0,self.twolatch,self.twoclock,self.twodata)
             t.low()
         for f in self.fourdigits:
-            setregister(0,fourlatch,fourclock,fourdata)
+            self.setregister(0,self.fourlatch,self.fourclock,self.fourdata)
             f.low()
 
     def getArray(self,val):
@@ -99,19 +108,19 @@ class segdisplays:
         self.setregister(0,latch,clock,data)
         digit.high()
 
-    def printnum(self,d,digits,latch,clock,data):
+    def printnumber(self,d):
         if d < 99:
             num = "{0}".format(d)
-            d = len(digits)
+            d = len(self.twodigits)-1
             i = len(num)-1
             while i >= 0 & d >= 0:
                 if(num[i].isdigit()):
                     val = segnum[int(num[i])]
-                    self.paintdigit(val,digits[d],latch,clock,data)
-                d -= 1
+                    self.paintdigit(val,self.twodigits[d],self.twolatch,self.twoclock,self.twodata)
+                    d -= 1
                 i -= 1
 
-    def printfloat(self,f,digits,latch,clock,data):
+    def printfloat(self,f):
         if f < 100: 
             num = "{:.2f}".format(f)
             i = len(num)-1
@@ -123,65 +132,107 @@ class segdisplays:
                     if decimal:
                         val |= 0x01 << 7
                         decimal = False
-                    self.paintdigit(val,digits[d],latch,clock,data)
+                    self.paintdigit(val,self.fourdigits[d],self.fourlatch,self.fourclock,self.fourdata)
                     d -= 1
                 else:
                     decimal = True
                 i -= 1
 
-def main():
-    fourlatch = Pin(fourlatchpin, Pin.OUT)
-    fourclock = Pin(fourclockpin, Pin.OUT)
-    fourdata = Pin(fourdatapin, Pin.OUT)
-        
-    twolatch = Pin(twolatchpin, Pin.OUT)
-    twoclock = Pin(twoclockpin, Pin.OUT)
-    twodata = Pin(twodatapin, Pin.OUT)
-    
-    segdisp = segdisplays()
+def getdistancemeasure():
+    print("getdistancemeasure")
 
     try:
-        print("circuit test...")
+        trig = Pin(triggerpin,Pin.OUT)
+        echo = Pin(echopin,Pin.IN,Pin.PULL_DOWN)
 
-        for d in segdisp.twodigits:
-            for i in range(8):
-                for w in range(waitreps):
-                    val = 0x01 << i
-                    segdisp.paintdigit(val,d,twolatch,twoclock,twodata)
+        receive = 0
+        send = 0
+
+        trig.low()
+        time.sleep(.002)
+        trig.high()
+        time.sleep(.002)
+        trig.low()
         
-        for d in segdisp.fourdigits:
-            for i in range(8):
-                for w in range(waitreps):
-                    val = 0x01 << i
-                    segdisp.paintdigit(val,d,fourlatch,fourclock,fourdata)
+        while echo.value() == 0:
+            time.sleep(.00001)
+        send = time.ticks_us()
+
+        while echo.value() == 1:
+            time.sleep(.00001)
+        receive = time.ticks_us()
+
+        timepassed = receive - send
+
+        distanceinmillimeters = 0
+
+        if timepassed > 0:
+            distanceinmillimeters = round((timepassed * speedofsound * millimeters) / 2)
         
-        d = 3
-        while d >= 0:
-            i = 7
-            while i >= 0:
-                for w in range(waitreps):
-                    val = 0x01 << i
-                    segdisp.paintdigit(val,segdisp.fourdigits[d],fourlatch,fourclock,fourdata)
-                i -= 1
-            d -= 1
+        if (distanceinmillimeters > ultrasoundlimit):
+            distanceinmillimeters = 0
+        
+        print("distanceinmillimeters = {0}".format(distanceinmillimeters))
+        
+        trig.low()
+    finally:
+        return distanceinmillimeters
 
-        d = 1
-        while d >= 0:
-            i = 7
-            while i >= 0:
-                for w in range(waitreps):
-                    val = 0x01 << i
-                    segdisp.paintdigit(val,segdisp.twodigits,twolatch,twoclock,twodata)
-                i -= 1
-            d -= 1
-
-        print("display test...")
-        i = 1
-        while i <= 10:
+def showbacknumber(segdisp):
+    d = 0
+    while d <= 1:
+        print("showbacknumber paintdigit {0}".format(d))
+        for i in range(5):
+            val = 0
             for w in range(waitreps):
-                segdisp.printnum(round(i),segdisp.twodigits,twolatch,twoclock,twodata)
-                segdisp.printfloat(i,segdisp.fourdigits,fourlatch,fourclock,fourdata)
-            i += 1.125
+                val = 0x01 << i
+                segdisp.paintdigit(val,segdisp.twodigits[d],segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
+        d += 1
+
+def showforwardnumber(segdisp):
+    d = 1
+    while d >= 0:
+        print("showforwardnumber paintdigit {0}".format(d))
+        i = 5
+        while i >= 0:
+            val = 0
+            for w in range(waitreps):
+                val = 0x01 << i
+                segdisp.paintdigit(val,segdisp.twodigits[d],segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
+            i -= 1
+        d -= 1
+
+def showbackfloat(segdisp):
+    for d in segdisp.fourdigits:
+        for i in range(5):
+            val = 0
+            for w in range(waitreps):
+                val = 0x01 << i
+                segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
+
+def showforwardfloat(segdisp):
+    d = 3
+    while d >= 0:
+        i = 5
+        while i >= 0:
+            val = 0
+            for w in range(waitreps):
+                val = 0x01 << i
+                segdisp.paintdigit(val,segdisp.fourdigits[d],segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
+            i -= 1
+        d -= 1
+
+def main():
+    segdisp = segdisplays()
+
+    print("twodigits[{0}] = {1}".format(0, segdisp.twodigits[0]))
+    print("twodigits[{0}] = {1}".format(1, segdisp.twodigits[1]))
+    try:
+        print("circuit test...")
+        showbacknumber(segdisp)
+        showbackfloat(segdisp)
+        showforwardfloat(segdisp)
+        showforwardnumber(segdisp)
     finally:
         print("test finished")
 
