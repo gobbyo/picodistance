@@ -16,8 +16,8 @@ frontdistancebuttonpin = const(14)
 backdistancebuttonpin = const(13)
 frontmeasureLEDpin = const(18)
 backmeasureLEDpin = const(19)
-frontbuttoncorrection = 0 #millimeters
-backbuttoncorrection = 45 #millimeters
+frontbuttoncorrection = 12 #millimeters
+backbuttoncorrection = 56 #millimeters
 
 twodigitpins = [21,16]
 fourdigitpins = [3,2,1,0]

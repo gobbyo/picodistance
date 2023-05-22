@@ -9,6 +9,23 @@ frontdistancebuttonpin = const(14)
 backdistancebuttonpin = const(13)
 frontmeasureLEDpin = const(18)
 backmeasureLEDpin = const(19)
+laser1pin = const(4)
+laser2pin = const(5)
+
+class diodeLasers(object):
+    def __init__(self):
+        self.laser1 = Pin(laser1pin,Pin.OUT)
+        self.laser2 = Pin(laser2pin,Pin.OUT)
+    def on(self):
+        self.laser1.high()
+        self.laser2.high()
+    def off(self):
+        print("turning off lasers")
+        self.laser1.low()
+        self.laser2.low()
+    
+    def __del__(self):
+        self.off()
 
 class buttonswitches(object):
     def __init__(self):
@@ -27,10 +44,8 @@ class buttonswitches(object):
         if frontcurrentvalue != self.frontlastvalue:
             self.frontlastvalue = frontcurrentvalue
             if frontcurrentvalue == 1:
-                print("front distance on")
                 self.frontmeasureLED.freq(1000)      # Set the frequency value
                 self.frontmeasureLED.duty_u16(int(led_value * 500)) 
-                print("back distance off")
                 self.backmeasureLED.duty_u16(int(0))
                 changed = True
         return changed
@@ -41,10 +56,8 @@ class buttonswitches(object):
         if backcurrentvalue != self.backlastvalue:
             self.backlastvalue = backcurrentvalue
             if backcurrentvalue == 1:
-                print("back distance on")
                 self.backmeasureLED.freq(1000)      # Set the frequency value
                 self.backmeasureLED.duty_u16(int(led_value * 500)) 
-                print("front distance off")
                 self.frontmeasureLED.duty_u16(int(0))
                 changed = True
         return changed
@@ -67,16 +80,23 @@ class buttonswitches(object):
 def main():   
     print("button switch test")
     switches = buttonswitches()
+    lasers = diodeLasers()
 
     try:
         t = time.time() + shutdown
 
         while t > time.time():
-            switches.onFrontBtnPressed()
-            switches.onBackBtnPressed()
-            switches.inMeters()
+            if switches.onFrontBtnPressed():
+                print("onFrontBtnPressed")
+            if switches.onBackBtnPressed():
+                print("onBackBtnPressed")
+            if switches.inMeters():
+                lasers.off()
+            else:
+                lasers.on()
     finally:
         print("gracefully exiting program")
+        lasers.__del__()
         switches.__del__()
 
 if __name__ == '__main__':
