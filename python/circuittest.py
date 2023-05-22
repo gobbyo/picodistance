@@ -22,7 +22,7 @@ import time
 # 8 =   0111 1111   0x7F
 # 9 =   0110 0111   0x67
 
-waitreps = 50
+waitreps = 10
 waitonpaint = 0.004
 # The variable below can be any number of digits for a 7 segment display. 
 # For example, a 2 digit 7 segment display is digitpins=[1,0], four digit 7 segment display is digitpins=[3,2,1,0], etc.
@@ -182,11 +182,19 @@ def showbacknumber(segdisp):
     d = 0
     while d <= 1:
         print("showbacknumber paintdigit {0}".format(d))
-        for i in range(5):
+        for i in range(6):
             val = 0
             for w in range(waitreps):
                 val = 0x01 << i
                 segdisp.paintdigit(val,segdisp.twodigits[d],segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
+        d += 1
+
+def showbacknumberOneSegonly(segdisp, val):
+    d = 0
+    while d <= 1:
+        print("showbacknumberGonly paintdigit {0}".format(d))
+        for w in range(waitreps):
+            segdisp.paintdigit(val,segdisp.twodigits[d],segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
         d += 1
 
 def showforwardnumber(segdisp):
@@ -202,12 +210,25 @@ def showforwardnumber(segdisp):
             i -= 1
         d -= 1
 
+def showforwardnumberOneSegonly(segdisp, val):
+    d = 1
+    while d >= 0:
+        print("showforwardnumberGonly paintdigit {0}".format(d))
+        for w in range(waitreps):
+            segdisp.paintdigit(val,segdisp.twodigits[d],segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
+        d -= 1
+
 def showbackfloat(segdisp):
     for d in segdisp.fourdigits:
-        for i in range(5):
+        for i in range(6):
             val = 0
             for w in range(waitreps):
                 val = 0x01 << i
+                segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
+
+def showbackfloatOneSegonly(segdisp, val):
+    for d in segdisp.fourdigits:
+            for w in range(waitreps):
                 segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
 
 def showforwardfloat(segdisp):
@@ -222,17 +243,31 @@ def showforwardfloat(segdisp):
             i -= 1
         d -= 1
 
+def showforwardfloatOneSegonly(segdisp, val):
+    d = 3
+    while d >= 0:
+        for w in range(waitreps):
+            segdisp.paintdigit(val,segdisp.fourdigits[d],segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
+        d -= 1
+
 def main():
     segdisp = segdisplays()
-
-    print("twodigits[{0}] = {1}".format(0, segdisp.twodigits[0]))
-    print("twodigits[{0}] = {1}".format(1, segdisp.twodigits[1]))
     try:
         print("circuit test...")
+        showbacknumberOneSegonly(segdisp, 0x01 << 7)
+        showbackfloatOneSegonly(segdisp, 0x01 << 7)
+        showforwardfloatOneSegonly(segdisp, 0x01 << 7)
+        showforwardnumberOneSegonly(segdisp, 0x01 << 7)
+
         showbacknumber(segdisp)
         showbackfloat(segdisp)
         showforwardfloat(segdisp)
         showforwardnumber(segdisp)
+
+        showbacknumberOneSegonly(segdisp, 0x01 << 6)
+        showbackfloatOneSegonly(segdisp, 0x01 << 6)
+        showforwardfloatOneSegonly(segdisp, 0x01 << 6)
+        showforwardnumberOneSegonly(segdisp, 0x01 << 6)
     finally:
         print("test finished")
 

@@ -79,11 +79,11 @@ def main():
 
     try:
         dt = distancestringtools()
-        for i in range(10):
+        for i in range(3):
             dt.set(getdistancemeasure())
             print("feet={0} inches={1}".format(dt.feet, dt.inches))
             print("meters={0} centimeters={1}".format(dt.meters, dt.centimeters))
-            time.sleep(5)
+            time.sleep(2)
         
     finally:
         print("Finished")

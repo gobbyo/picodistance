@@ -1,7 +1,7 @@
 from machine import Pin
 import time
 
-shutdown = const(600)
+shutdown = const(10)
 waitreps = const(10)
 waitonpaint = 0.002
 millimeters = const(0.001)
@@ -9,15 +9,15 @@ ultrasoundlimit = const(4572) #set to 15 feet (in millimeters) based on the spec
 segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
 speedofsound = const(343) # meters per second
 
-triggerpin = const(12)
-echopin = const(13)
+triggerpin = const(11)
+echopin = const(12)
 conversionbuttonpin = const(15)
 frontdistancebuttonpin = const(14)
-backdistancebuttonpin = const(11)
+backdistancebuttonpin = const(13)
 frontmeasureLEDpin = const(18)
 backmeasureLEDpin = const(19)
 frontbuttoncorrection = -10 #millimeters
-backbuttoncorrection = 6 #millimeters
+backbuttoncorrection = 45 #millimeters
 
 twodigitpins = [21,16]
 fourdigitpins = [3,2,1,0]
@@ -164,6 +164,7 @@ class segdisplays:
 
 def getdistancemeasure():
     print("getdistancemeasure")
+    escapevalue = 100000
 
     try:
         trig = Pin(triggerpin,Pin.OUT)
@@ -178,6 +179,7 @@ def getdistancemeasure():
         time.sleep(.002)
         trig.low()
         
+        i = 0
         while echo.value() == 0:
             time.sleep(.00001)
         send = time.ticks_us()
@@ -205,7 +207,7 @@ def getdistancemeasure():
 def showbacknumber(segdisp):
     for d in segdisp.twodigits:
         for i in range(6):
-            for w in range(waitreps):
+            for w in range(waitreps/4):
                 val = 0x01 << i
                 segdisp.paintdigit(val,d,segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
 
@@ -214,7 +216,7 @@ def showforwardnumber(segdisp):
     while d >= 0:
         i = 6
         while i >= 0:
-            for w in range(waitreps):
+            for w in range(waitreps/4):
                 val = 0x01 << i
                 segdisp.paintdigit(val,segdisp.twodigits[d],segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
             i -= 1
@@ -223,7 +225,7 @@ def showforwardnumber(segdisp):
 def showbackfloat(segdisp):
     for d in segdisp.fourdigits:
         for i in range(6):
-            for w in range(waitreps):
+            for w in range(waitreps/4):
                 val = 0x01 << i
                 segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
 
@@ -232,7 +234,7 @@ def showforwardfloat(segdisp):
     while d >= 0:
         i = 6
         while i >= 0:
-            for w in range(waitreps):
+            for w in range(waitreps/4):
                 val = 0x01 << i
                 segdisp.paintdigit(val,segdisp.fourdigits[d],segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
             i -= 1
@@ -261,6 +263,9 @@ def main():
         t = time.time() + shutdown
 
         while t > time.time():
+            if frontdistancebutton.value() and backtdistancebutton.value():
+                break
+
             if frontdistancebutton.value():
                 t += shutdown
                 d = getdistancemeasure() + frontbuttoncorrection
@@ -290,7 +295,7 @@ def main():
                for w in range(waitreps):
                     display.printnumber(distance.feet)
                     display.printfloat(distance.inches)
-
+            
     finally:
         frontmeasureLED.low()
         backmeasureLED.low()
