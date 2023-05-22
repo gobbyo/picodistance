@@ -5,8 +5,9 @@ triggerpin = const(11)
 echopin = const(12)
 
 millimeters = const(0.001)
-ultrasoundlimit = const(4572) #set to 15 feet (in millimeters) based on the spec sheet.
+ultrasoundlimit = const(3657) #set max to 12 feet (in millimeters)
 speedofsound = const(343) # meters per second
+led_value = const(20)      # 20% brightness
 
 class distancestringtools(object):
 

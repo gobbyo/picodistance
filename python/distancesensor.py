@@ -1,10 +1,10 @@
-from machine import Pin
+from machine import Pin, PWM
 import time
 
-shutdown = const(10)
 waitreps = const(10)
 waitonpaint = 0.002
 millimeters = const(0.001)
+led_value = const(20)      # 20% brightness
 ultrasoundlimit = const(4572) #set to 15 feet (in millimeters) based on the spec sheet.
 segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
 speedofsound = const(343) # meters per second
@@ -16,7 +16,7 @@ frontdistancebuttonpin = const(14)
 backdistancebuttonpin = const(13)
 frontmeasureLEDpin = const(18)
 backmeasureLEDpin = const(19)
-frontbuttoncorrection = -10 #millimeters
+frontbuttoncorrection = 0 #millimeters
 backbuttoncorrection = 45 #millimeters
 
 twodigitpins = [21,16]
@@ -161,10 +161,105 @@ class segdisplays:
                 else:
                     decimal = True
                 i -= 1
+    
+    def showbacknumber(self):
+        for d in self.twodigits:
+            for i in range(6):
+                for w in range(waitreps/4):
+                    val = 0x01 << i
+                    self.paintdigit(val,d,self.twolatch,self.twoclock,self.twodata)
 
+    def showforwardnumber(self):
+        d = 1
+        while d >= 0:
+            i = 6
+            while i >= 0:
+                for w in range(waitreps/4):
+                    val = 0x01 << i
+                    self.paintdigit(val,self.twodigits[d],self.twolatch,self.twoclock,self.twodata)
+                i -= 1
+            d -= 1
+
+    def showbackfloat(self):
+        for d in self.fourdigits:
+            for i in range(6):
+                for w in range(waitreps/4):
+                    val = 0x01 << i
+                    self.paintdigit(val,d,self.fourlatch,self.fourclock,self.fourdata)
+
+    def showforwardfloat(self):
+        d = 3
+        while d >= 0:
+            i = 6
+            while i >= 0:
+                for w in range(waitreps/4):
+                    val = 0x01 << i
+                    self.paintdigit(val,self.fourdigits[d],self.fourlatch,self.fourclock,self.fourdata)
+                i -= 1
+            d -= 1
+    
+    def startup(self):
+        self.showbacknumber()
+        self.showbackfloat()
+        self.showforwardfloat()
+        self.showforwardnumber()
+
+class buttonswitches(object):
+    def __init__(self):
+        self.frontdistancebutton=Pin(frontdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
+        self.backdistancebutton=Pin(backdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
+        self.conversionbutton=Pin(conversionbuttonpin,Pin.IN,Pin.PULL_DOWN)
+        self.frontmeasureLED=PWM(Pin(frontmeasureLEDpin))
+        self.backmeasureLED=PWM(Pin(backmeasureLEDpin))
+        self.backlastvalue = 0
+        self.frontlastvalue = 0
+        self.convlastvalue = 0
+    
+    def onFrontBtnPressed(self):
+        changed = False
+        frontcurrentvalue = self.frontdistancebutton.value()
+        if frontcurrentvalue != self.frontlastvalue:
+            self.frontlastvalue = frontcurrentvalue
+            if frontcurrentvalue == 1:
+                print("front distance on")
+                self.frontmeasureLED.freq(1000)      # Set the frequency value
+                self.frontmeasureLED.duty_u16(int(led_value * 500)) 
+                print("back distance off")
+                self.backmeasureLED.duty_u16(int(0))
+                changed = True
+        return changed
+
+    def onBackBtnPressed(self):
+        changed = False        
+        backcurrentvalue = self.backdistancebutton.value()
+        if backcurrentvalue != self.backlastvalue:
+            self.backlastvalue = backcurrentvalue
+            if backcurrentvalue == 1:
+                print("back distance on")
+                self.backmeasureLED.freq(1000)      # Set the frequency value
+                self.backmeasureLED.duty_u16(int(led_value * 500)) 
+                print("front distance off")
+                self.frontmeasureLED.duty_u16(int(0))
+                changed = True
+        return changed
+    
+    def inMeters(self):
+        convcurrentvalue = self.conversionbutton.value()
+        if convcurrentvalue != self.convlastvalue:
+            self.convlastvalue = convcurrentvalue
+            if convcurrentvalue == 1:
+                print("meters")
+            else:
+                print("feet")
+        return self.convlastvalue
+    
+    def __del__(self):
+        print("turning off LEDs")
+        self.frontmeasureLED.duty_u16(int(0))
+        self.backmeasureLED.duty_u16(int(0))
+        
 def getdistancemeasure():
     print("getdistancemeasure")
-    escapevalue = 100000
 
     try:
         trig = Pin(triggerpin,Pin.OUT)
@@ -192,8 +287,10 @@ def getdistancemeasure():
 
         distanceinmillimeters = 0
 
-        if timepassed > 0:
+        if timepassed > 100:
             distanceinmillimeters = round((timepassed * speedofsound * millimeters) / 2)
+        else:
+            distanceinmillimeters = 0
         
         if (distanceinmillimeters > ultrasoundlimit):
             distanceinmillimeters = 0
@@ -204,90 +301,35 @@ def getdistancemeasure():
     finally:
         return distanceinmillimeters
 
-def showbacknumber(segdisp):
-    for d in segdisp.twodigits:
-        for i in range(6):
-            for w in range(waitreps/4):
-                val = 0x01 << i
-                segdisp.paintdigit(val,d,segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
-
-def showforwardnumber(segdisp):
-    d = 1
-    while d >= 0:
-        i = 6
-        while i >= 0:
-            for w in range(waitreps/4):
-                val = 0x01 << i
-                segdisp.paintdigit(val,segdisp.twodigits[d],segdisp.twolatch,segdisp.twoclock,segdisp.twodata)
-            i -= 1
-        d -= 1
-
-def showbackfloat(segdisp):
-    for d in segdisp.fourdigits:
-        for i in range(6):
-            for w in range(waitreps/4):
-                val = 0x01 << i
-                segdisp.paintdigit(val,d,segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
-
-def showforwardfloat(segdisp):
-    d = 3
-    while d >= 0:
-        i = 6
-        while i >= 0:
-            for w in range(waitreps/4):
-                val = 0x01 << i
-                segdisp.paintdigit(val,segdisp.fourdigits[d],segdisp.fourlatch,segdisp.fourclock,segdisp.fourdata)
-            i -= 1
-        d -= 1
-
-def startup(segdisp):
-    showbacknumber(segdisp)
-    showbackfloat(segdisp)
-    showforwardfloat(segdisp)
-    showforwardnumber(segdisp)
 
 def main():   
-    frontdistancebutton=Pin(frontdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
-    backtdistancebutton=Pin(backdistancebuttonpin,Pin.IN,Pin.PULL_DOWN)
-    conversionbutton=Pin(conversionbuttonpin,Pin.IN,Pin.PULL_DOWN)
-    frontmeasureLED=Pin(frontmeasureLEDpin,Pin.OUT)
-    backmeasureLED=Pin(backmeasureLEDpin,Pin.OUT)
-    
     display = segdisplays()
-    startup(display)
+    display.startup()
+    switches = buttonswitches()
 
     try:
         prev = d = 0
         distance = distancestringtools()
         distance.set(d)
-        t = time.time() + shutdown
 
-        while t > time.time():
-            if frontdistancebutton.value() and backtdistancebutton.value():
-                break
-
-            if frontdistancebutton.value():
-                t += shutdown
+        while not (switches.frontdistancebutton.value() and switches.backdistancebutton.value()):
+            if switches.onFrontBtnPressed():
                 d = getdistancemeasure() + frontbuttoncorrection
                 distance.set(d)
                 if(d != prev):
-                    showforwardfloat(display)
-                    showforwardnumber(display)
+                    display.showforwardfloat()
+                    display.showforwardnumber()
                     prev = d
-                frontmeasureLED.high()
-                backmeasureLED.low()
-            if backtdistancebutton.value():
-                t += shutdown
+
+            if switches.onBackBtnPressed():
                 d = getdistancemeasure() + backbuttoncorrection
                 distance.set(d)
                 if(d != prev):
-                    showbacknumber(display)
-                    showbackfloat(display)
+                    display.showbacknumber()
+                    display.showbackfloat()
                     prev = d
-                frontmeasureLED.low()
-                backmeasureLED.high()
 
-            if conversionbutton.value():
+            if switches.inMeters():
                 for w in range(waitreps):
                     display.printnumber(distance.meters)
                     display.printfloat(distance.centimeters)
@@ -297,11 +339,8 @@ def main():
                     display.printfloat(distance.inches)
             
     finally:
-        frontmeasureLED.low()
-        backmeasureLED.low()
-        conversionbutton.low()
-        frontdistancebutton.low()
         display.__del__()
+        switches.__del__()
 
 if __name__ == '__main__':
 	main()
