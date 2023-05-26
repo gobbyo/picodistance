@@ -8,6 +8,8 @@ millimeters = const(0.001)
 ultrasoundlimit = const(3657) #set max to 12 feet (in millimeters)
 speedofsound = const(343) # meters per second
 led_value = const(20)      # 20% brightness
+frontbuttoncorrection = -8 #millimeters
+backbuttoncorrection = 43 #millimeters
 
 class distancestringtools(object):
 
@@ -81,7 +83,7 @@ def main():
     try:
         dt = distancestringtools()
         for i in range(3):
-            dt.set(getdistancemeasure())
+            dt.set(getdistancemeasure()-6)
             print("feet={0} inches={1}".format(dt.feet, dt.inches))
             print("meters={0} centimeters={1}".format(dt.meters, dt.centimeters))
             time.sleep(2)

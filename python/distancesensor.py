@@ -5,10 +5,12 @@ waitreps = const(10)
 waitonpaint = 0.002
 millimeters = const(0.001)
 led_value = const(20)      # 20% brightness
-ultrasoundlimit = const(4572) #set to 15 feet (in millimeters) based on the spec sheet.
+ultrasoundlimit = const(3657) #set to 12 feet (in millimeters) based on real world testing.
 segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
 speedofsound = const(343) # meters per second
 
+laser1pin = const(4)
+laser2pin = const(5)
 triggerpin = const(11)
 echopin = const(12)
 conversionbuttonpin = const(15)
@@ -16,8 +18,8 @@ frontdistancebuttonpin = const(14)
 backdistancebuttonpin = const(13)
 frontmeasureLEDpin = const(18)
 backmeasureLEDpin = const(19)
-frontbuttoncorrection = 12 #millimeters
-backbuttoncorrection = 56 #millimeters
+frontbuttoncorrection = -6 #millimeters
+backbuttoncorrection = 44 #millimeters
 
 twodigitpins = [21,16]
 fourdigitpins = [3,2,1,0]
@@ -60,7 +62,22 @@ class distancestringtools(object):
             self.feet = int(n[0])
             self.inches = float(totalinches - (float(self.feet) * 12.0))
             self.s_inches = "{0}".format(self.inches)
-        
+
+class diodeLasers(object):
+    def __init__(self):
+        self.laser1 = Pin(laser1pin,Pin.OUT)
+        self.laser2 = Pin(laser2pin,Pin.OUT)
+    def on(self):
+        self.laser1.high()
+        self.laser2.high()
+    def off(self):
+        print("turning off lasers")
+        self.laser1.low()
+        self.laser2.low()
+    
+    def __del__(self):
+        self.off()
+
 class segdisplays:
     def __init__(self):
         self.twodigits = []
@@ -306,11 +323,13 @@ def main():
     display = segdisplays()
     display.startup()
     switches = buttonswitches()
+    lasers = diodeLasers()
 
     try:
         prev = d = 0
         distance = distancestringtools()
         distance.set(d)
+        lasers.on()
 
         while not (switches.frontdistancebutton.value() and switches.backdistancebutton.value()):
             if switches.onFrontBtnPressed():
@@ -339,6 +358,8 @@ def main():
                     display.printfloat(distance.inches)
             
     finally:
+        print("shutting down")
+        lasers.off()
         display.__del__()
         switches.__del__()
 

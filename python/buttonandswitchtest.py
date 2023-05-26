@@ -91,9 +91,11 @@ def main():
             if switches.onBackBtnPressed():
                 print("onBackBtnPressed")
             if switches.inMeters():
-                lasers.off()
+                lasers.laser1.off()
+                lasers.laser2.on()
             else:
-                lasers.on()
+                lasers.laser1.on()
+                lasers.laser2.off()
     finally:
         print("gracefully exiting program")
         lasers.__del__()
