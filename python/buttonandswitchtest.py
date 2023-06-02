@@ -84,7 +84,7 @@ def main():
 
     try:
         t = time.time() + shutdown
-
+        
         while t > time.time():
             if switches.onFrontBtnPressed():
                 print("onFrontBtnPressed")
