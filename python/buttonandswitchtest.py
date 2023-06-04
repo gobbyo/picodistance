@@ -4,9 +4,9 @@ import time
 shutdown = const(30)
 
 led_value = const(20)      # 20% brightness
-conversionbuttonpin = const(15)
-frontdistancebuttonpin = const(14)
 backdistancebuttonpin = const(13)
+conversionbuttonpin = const(14)
+frontdistancebuttonpin = const(15)
 frontmeasureLEDpin = const(18)
 backmeasureLEDpin = const(19)
 laser1pin = const(4)
