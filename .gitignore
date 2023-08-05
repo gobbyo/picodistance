@@ -1,5 +1,6 @@
 # main
 main.py
+*.uf2
 
 # blender
 *.blend1

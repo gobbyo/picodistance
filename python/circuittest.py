@@ -138,46 +138,6 @@ class segdisplays:
                     decimal = True
                 i -= 1
 
-def getdistancemeasure():
-    print("getdistancemeasure")
-
-    try:
-        trig = Pin(triggerpin,Pin.OUT)
-        echo = Pin(echopin,Pin.IN,Pin.PULL_DOWN)
-
-        receive = 0
-        send = 0
-
-        trig.low()
-        time.sleep(.002)
-        trig.high()
-        time.sleep(.002)
-        trig.low()
-        
-        while echo.value() == 0:
-            time.sleep(.00001)
-        send = time.ticks_us()
-
-        while echo.value() == 1:
-            time.sleep(.00001)
-        receive = time.ticks_us()
-
-        timepassed = receive - send
-
-        distanceinmillimeters = 0
-
-        if timepassed > 0:
-            distanceinmillimeters = round((timepassed * speedofsound * millimeters) / 2)
-        
-        if (distanceinmillimeters > ultrasoundlimit):
-            distanceinmillimeters = 0
-        
-        print("distanceinmillimeters = {0}".format(distanceinmillimeters))
-        
-        trig.low()
-    finally:
-        return distanceinmillimeters
-
 def showbacknumber(segdisp):
     d = 0
     while d <= 1:
