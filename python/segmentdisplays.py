@@ -23,7 +23,7 @@ import time
 # 9 =   0110 0111   0x67
 
 class segdisplays:
-    waitreps = const(10)
+    waitreps = 10
     waitonpaint = 0.002
     segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
     #2 and 4 digit display pins
