@@ -153,7 +153,7 @@ class segdisplays:
     def showforwardnumber(self):
         d = 1
         while d >= 0:
-            i = 5
+            i = 6
             while i >= 0:
                 for w in range(self.waitreps/4):
                     val = 0x01 << i
@@ -171,7 +171,7 @@ class segdisplays:
     def showforwardfloat(self):
         d = 3
         while d >= 0:
-            i = 5
+            i = 6
             while i >= 0:
                 for w in range(self.waitreps/4):
                     val = 0x01 << i
@@ -179,50 +179,58 @@ class segdisplays:
                 i -= 1
             d -= 1
 
-    def forwardnumberOneSegonly(self, val):
-        print("forwardnumberOneSegonly")
-        n = len(self.twodigits)-1
-        while n >= 0:
-            d = self.twodigits[n]
-            for w in range(self.waitreps/4):
-                d.low()
-                self.setregister(val,self.twolatch,self.twoclock,self.twodata)
-                time.sleep(self.waitonpaint)
-                self.setregister(0,self.twolatch,self.twoclock,self.twodata)
-                d.high()
-            n -= 1
+    def backnumberOneSegonly(self, startval):
+        print("showbacknumberOneSegonly")
+        a = len(self.twodigits)-1
+        while a > 0:
+            d = self.twodigits[a]
+            for v in range(6):
+                i = startval
+                for i in range(self.waitreps/4):
+                    val = 0x01 << i
+                    d.low()
+                    self.setregister(val,self.twolatch,self.twoclock,self.twodata)
+                    time.sleep(self.waitonpaint)
+                    self.setregister(0,self.twolatch,self.twoclock,self.twodata)
+                    d.high()
     
-    def backnumberOneSegonly(self, val):
-        print("backnumberOneSegonly")
+    def forwardnumberOneSegonly(self):
+        val = 0
         for d in self.twodigits:
-            for w in range(self.waitreps/4):
-                d.low()
-                self.setregister(val,self.twolatch,self.twoclock,self.twodata)
-                time.sleep(self.waitonpaint)
-                self.setregister(0,self.twolatch,self.twoclock,self.twodata)
-                d.high()
+            for v in range(6):
+                for i in range(self.waitreps/4):
+                    val = 0x01 << i
+                    d.low()
+                    self.setregister(val,self.twolatch,self.twoclock,self.twodata)
+                    time.sleep(self.waitonpaint)
+                    self.setregister(0,self.twolatch,self.twoclock,self.twodata)
+                    d.high()
     
-    def forwardfloatOneSegonly(self, val):
-        print("forwardfloatOneSegonly")
-        n = len(self.fourdigits)-1
-        while n >= 0:
-            for w in range(self.waitreps/4):
-                d = self.fourdigits[n]
-                d.low()
-                self.setregister(val,self.fourlatch,self.fourclock,self.fourdata)
-                time.sleep(self.waitonpaint)
-                self.setregister(0,self.fourlatch,self.fourclock,self.fourdata)
-                d.high()
-            n -= 1
+    def backfloatOneSegonly(self):
+        val = 0
+        a = len(self.twodigits)-1
+        while a > 0:
+            d = self.twodigits[a]
+            for v in range(6):
+                for i in range(self.waitreps/4):
+                    val = 0x01 << i
+                    d.low()
+                    self.setregister(val,self.fourlatch,self.fourclock,self.fourdata)
+                    time.sleep(self.waitonpaint)
+                    self.setregister(0,self.fourlatch,self.fourclock,self.fourdata)
+                    d.high()
     
-    def backfloatOneSegonly(self, val):
-        print("backfloatOneSegonly")
-        for d in self.fourdigits:
-            d.low()
-            self.setregister(val,self.fourlatch,self.fourclock,self.fourdata)
-            time.sleep(self.waitonpaint)
-            self.setregister(0,self.fourlatch,self.fourclock,self.fourdata)
-            d.high()
+    def backfloatOneSegonly(self):
+        val = 0
+        for d in self.twodigits:
+            for v in range(6):
+                for i in range(self.waitreps/4):
+                    val = 0x01 << i
+                    d.low()
+                    self.setregister(val,self.fourlatch,self.fourclock,self.fourdata)
+                    time.sleep(self.waitonpaint)
+                    self.setregister(0,self.fourlatch,self.fourclock,self.fourdata)
+                    d.high()
 
     def startup(self):
         self.showbacknumber()
