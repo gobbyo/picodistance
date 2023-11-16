@@ -1,18 +1,23 @@
-from buttonsandLEDs import buttonswitches
+from buttonswitches import buttonswitches
 
 def main():
     # Create an instance of the buttonswitches class
     btns = buttonswitches()
     try:
+        prev = "feet"
         while True:
             if btns.onFrontBtnPressed():
                 print("front button pressed")
             if btns.onBackBtnPressed():
                 print("back button pressed")
             if btns.inMeters():
-                print("meters")
+                if prev == "feet":
+                    print("meters")
+                    prev = "meters"
             else:
-                print("feet")
+                if prev == "meters":
+                    print("feet")
+                    prev = "feet"
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
     finally:
